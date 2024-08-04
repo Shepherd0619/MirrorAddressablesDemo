@@ -194,13 +194,16 @@ public class MyNetworkManager : NetworkManager
 		if (NetworkClient.connection.isAuthenticated && !NetworkClient.ready) NetworkClient.Ready();
 
 		// Only call AddPlayer for normal scene changes, not additive load/unload
-		if (NetworkClient.connection.isAuthenticated && clientSceneOperation == SceneOperation.Normal && autoCreatePlayer && NetworkClient.localPlayer == null)
+		if (NetworkClient.connection.isAuthenticated && clientAddressableSceneOperation == SceneOperation.Normal && autoCreatePlayer && NetworkClient.localPlayer == null)
 		{
 			// add player if existing one is null
 
 			// fix: 修复玩家加入报There is already a player for this connection错误。
-			if (loadingSceneAsync.IsValid() && loadingSceneAsync.IsDone && loadingSceneAsync.Status == AsyncOperationStatus.Succeeded)
+			if (loadingSceneAsync.IsValid() && loadingSceneAsync.IsDone && loadingSceneAsync.Status == AsyncOperationStatus.Succeeded) 
+			{
 				NetworkClient.AddPlayer();
+				//Debug.LogWarning("AddPlayer!");
+			}
 		}
 	}
 
@@ -218,7 +221,7 @@ public class MyNetworkManager : NetworkManager
 	// This is only set in ClientChangeScene below...never on server.
 	// We need to check this in OnClientSceneChanged called from FinishLoadSceneClientOnly
 	// to prevent AddPlayer message after loading/unloading additive scenes
-	SceneOperation clientSceneOperation = SceneOperation.Normal;
+	SceneOperation clientAddressableSceneOperation = SceneOperation.Normal;
 
 	internal void ClientChangeScene(string newSceneName, SceneOperation sceneOperation = SceneOperation.Normal, bool customHandling = false)
 	{
@@ -248,7 +251,7 @@ public class MyNetworkManager : NetworkManager
 
 		// Cache sceneOperation so we know what was requested by the
 		// Scene message in OnClientChangeScene and OnClientSceneChanged
-		clientSceneOperation = sceneOperation;
+		clientAddressableSceneOperation = sceneOperation;
 
 		// scene handling will happen in overrides of OnClientChangeScene and/or OnClientSceneChanged
 		// Do not call FinishLoadScene here. Custom handler will assign loadingSceneAsync and we need
@@ -298,7 +301,7 @@ public class MyNetworkManager : NetworkManager
 
 	void UpdateScene()
 	{
-		if (loadingSceneAsync.IsValid() && loadingSceneAsync.IsDone)
+		if (loadingSceneAsync.IsValid() && loadingSceneAsync.IsDone && loadingSceneAsync.Status == AsyncOperationStatus.Succeeded)
 		{
 			//Debug.Log($"ClientChangeScene done readyConn {clientReadyConnection}");
 
@@ -317,6 +320,9 @@ public class MyNetworkManager : NetworkManager
 					if (scene != null && SceneManager.GetActiveScene().name != networkSceneName)
 						SceneManager.SetActiveScene(scene);
 				}
+
+                // fix: 修复玩家加入报There is already a player for this connection错误。
+                loadingSceneAsync = default;
 			}
 			catch (Exception e)
 			{
