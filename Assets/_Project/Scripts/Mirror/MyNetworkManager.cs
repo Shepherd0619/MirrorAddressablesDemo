@@ -133,6 +133,13 @@ public class MyNetworkManager : NetworkManager
 			return;
 		}
 
+		var searchResult = Addressables.LoadResourceLocationsAsync(newSceneName, typeof(SceneInstance)).WaitForCompletion();
+		if(searchResult.Count <= 0 )
+		{
+            Debug.LogError($"Scene {newSceneName} does not exist in Addressables!");
+            return;
+        }
+
 		// Debug.Log($"ServerChangeScene {newSceneName}");
 		NetworkServer.SetAllClientsNotReady();
 		networkSceneName = newSceneName;
