@@ -71,15 +71,33 @@ public class MyNetworkManager : NetworkManager
 		base.Update();
 	}
 
-	#endregion
+	string sceneName;
 
-	#region Start & Stop
+    private void OnGUI()
+    {
+        GUILayout.BeginArea(new Rect(10, 120, 300, 9999));
 
-	/// <summary>
-	/// Set the frame rate for a headless server.
-	/// <para>Override if you wish to disable the behavior or set your own tick rate.</para>
-	/// </summary>
-	public override void ConfigureHeadlessFrameRate()
+        if (NetworkServer.active)
+        {
+            sceneName = GUILayout.TextField(sceneName);
+            if(GUILayout.Button("Change Scene"))
+			{
+				ServerChangeScene(sceneName);
+			}
+        }
+
+        GUILayout.EndArea();
+    }
+
+    #endregion
+
+    #region Start & Stop
+
+    /// <summary>
+    /// Set the frame rate for a headless server.
+    /// <para>Override if you wish to disable the behavior or set your own tick rate.</para>
+    /// </summary>
+    public override void ConfigureHeadlessFrameRate()
 	{
 		base.ConfigureHeadlessFrameRate();
 	}
